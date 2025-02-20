@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { useLikes } from "../context/LikesContext"; // Import useLikes
+import { useState, useEffect } from "react";
+import useLikesStore from "../store/likesStore";
 
 const articles = [
   { id: 1, title: "Belajar React", content: "React itu keren!" },
@@ -17,26 +17,13 @@ function ArticleDetail() {
 
   if (!article) return <h2>Artikel tidak ditemukan</h2>;
 
-  const { likes, views, addLike, addView } = useLikes(); // Ambil state dari Context
+  const { likes, views, addLike, addView } = useLikesStore();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-  const commentInputRef = useRef(null);
 
   useEffect(() => {
-    addView(id); // Tambahkan view saat artikel dibuka
+    addView(id);
   }, [id, addView]);
-
-  const handleCommentChange = (event) => {
-    setComment(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (comment.trim() !== "") {
-      setComments([...comments, comment]);
-      setComment("");
-    }
-  };
 
   return (
     <div>
@@ -44,20 +31,21 @@ function ArticleDetail() {
       <p>{article.content}</p>
       <p>👀 Views: {views[id] || 0}</p>
       <button onClick={() => addLike(id)}>Like ({likes[id] || 0})</button>
-
-      {/* Form untuk menambahkan komentar */}
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (comment.trim()) setComments([...comments, comment]);
+          setComment("");
+        }}
+      >
         <input
-          ref={commentInputRef}
           type="text"
           placeholder="Tulis komentar..."
           value={comment}
-          onChange={handleCommentChange}
+          onChange={(e) => setComment(e.target.value)}
         />
         <button type="submit">Kirim</button>
       </form>
-
-      {/* Menampilkan daftar komentar */}
       <ul>
         {comments.map((c, index) => (
           <li key={index}>{c}</li>
