@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import useCounter from "../hooks/useCounter"; // Import Custom Hook
 
 const articles = [
   { id: 1, title: "Belajar React", content: "React itu keren!" },
@@ -11,25 +12,16 @@ const articles = [
 ];
 
 function ArticleDetail() {
-  const { id } = useParams(); // Ambil ID dari URL
+  const { id } = useParams();
   const article = articles.find((a) => a.id === parseInt(id));
 
   if (!article) return <h2>Artikel tidak ditemukan</h2>;
 
-  const [likes, setLikes] = useState(0);
-  const [comment, setComment] = useState(""); // State untuk input komentar
-  const [comments, setComments] = useState([]); // State untuk daftar komentar
-  const [views, setViews] = useState(0); // State untuk menyimpan jumlah views
-  const commentInputRef = useRef(null); // useRef untuk referensi input komentar
-
-  useEffect(() => {
-    setViews((prevViews) => prevViews + 1); // Tambah views setiap kali halaman dibuka
-    commentInputRef.current.focus(); // Fokus otomatis ke input komentar saat halaman dibuka
-  }, []); // Dependency array kosong agar hanya dijalankan saat pertama kali render
-
-  const handleLike = () => {
-    setLikes(likes + 1);
-  };
+  const [likes, incrementLikes] = useCounter(0); // Gunakan useCounter untuk likes
+  const [views] = useCounter(0); // Gunakan useCounter untuk views
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const commentInputRef = useRef(null);
 
   const handleCommentChange = (event) => {
     setComment(event.target.value);
@@ -38,8 +30,8 @@ function ArticleDetail() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (comment.trim() !== "") {
-      setComments([...comments, comment]); // Tambahkan komentar ke list
-      setComment(""); // Reset input setelah submit
+      setComments([...comments, comment]);
+      setComment("");
     }
   };
 
@@ -48,12 +40,12 @@ function ArticleDetail() {
       <h1>{article.title}</h1>
       <p>{article.content}</p>
       <p>👀 Views: {views}</p>
-      <button onClick={handleLike}>Like ({likes})</button>
+      <button onClick={incrementLikes}>Like ({likes})</button>
 
       {/* Form untuk menambahkan komentar */}
       <form onSubmit={handleSubmit}>
         <input
-          ref={commentInputRef} // Tambahkan ref untuk fokus otomatis
+          ref={commentInputRef}
           type="text"
           placeholder="Tulis komentar..."
           value={comment}
