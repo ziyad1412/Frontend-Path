@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useState, useRef } from "react";
-import useCounter from "../hooks/useCounter"; // Import Custom Hook
+import { useState, useEffect, useRef } from "react";
+import { useLikes } from "../context/LikesContext"; // Import useLikes
 
 const articles = [
   { id: 1, title: "Belajar React", content: "React itu keren!" },
@@ -17,11 +17,14 @@ function ArticleDetail() {
 
   if (!article) return <h2>Artikel tidak ditemukan</h2>;
 
-  const [likes, incrementLikes] = useCounter(0); // Gunakan useCounter untuk likes
-  const [views] = useCounter(0); // Gunakan useCounter untuk views
+  const { likes, views, addLike, addView } = useLikes(); // Ambil state dari Context
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const commentInputRef = useRef(null);
+
+  useEffect(() => {
+    addView(id); // Tambahkan view saat artikel dibuka
+  }, [id, addView]);
 
   const handleCommentChange = (event) => {
     setComment(event.target.value);
@@ -39,8 +42,8 @@ function ArticleDetail() {
     <div>
       <h1>{article.title}</h1>
       <p>{article.content}</p>
-      <p>👀 Views: {views}</p>
-      <button onClick={incrementLikes}>Like ({likes})</button>
+      <p>👀 Views: {views[id] || 0}</p>
+      <button onClick={() => addLike(id)}>Like ({likes[id] || 0})</button>
 
       {/* Form untuk menambahkan komentar */}
       <form onSubmit={handleSubmit}>
